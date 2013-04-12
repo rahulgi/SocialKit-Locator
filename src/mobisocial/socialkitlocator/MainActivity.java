@@ -1,7 +1,7 @@
 package mobisocial.socialkitlocator;
 
 import java.util.List;
-import java.util.Locale;
+//import java.util.Locale;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,13 +14,18 @@ import mobisocial.socialkit.musubi.DbIdentity;
 import mobisocial.socialkit.musubi.Musubi;
 import mobisocial.socialkit.obj.MemObj;
 
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
@@ -29,10 +34,46 @@ public class MainActivity extends Activity {
 	private static final String ACTION_CREATE_FEED = "musubi.intent.action.CREATE_FEED";
 	private static final int REQUEST_CREATE_FEED = 1;
 	
+	private TextView locationPresenter;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		locationPresenter = (TextView) findViewById(R.id.locationPresenter);
+		beginListeningForLocation();
+	}
+	
+	private static int updated = 0;
+	
+	private void beginListeningForLocation() {
+		// Acquire a reference to the system Location Manager
+		LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+		
+		// Define a listener that responds to location updates
+		LocationListener locationListener = new LocationListener() {
+			@Override
+			public void onLocationChanged(Location location) {
+				locationPresenter.setText(updated ++ + ": " + location.getLatitude() + ", " + location.getLongitude());
+			}
+			
+			@Override
+			public void onProviderDisabled(String provider) {
+				
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+				
+			}
+
+			@Override
+			public void onStatusChanged(String provider, int status, Bundle extras) {
+				
+			}
+		};
+		
+		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 	}
 
 	@Override
@@ -90,6 +131,7 @@ public class MainActivity extends Activity {
 				return;
 			}
 			feed.postObj(new MemObj("socialkit-locator", json));
+			Log.d(TAG, "json obj posted: " + json.toString());
 		}
 	}
 }
